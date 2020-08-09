@@ -4,16 +4,16 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-def __get_content(url: str, text: bool, encoding: str=None):
+def __get_content(url: str, text: bool, content_encoding: str=None):
     try:
         if url.startswith("file:"):
             mode = "r" if text else "rb"
-            with open(url[5:], mode=mode, encoding=encoding) as f:
+            with open(url[5:], mode=mode, encoding=content_encoding) as f:
                 content = f.read()
         else:
             response = requests.get(url)
             if text:
-                response.encoding = encoding if encoding else response.apparent_encoding
+                response.encoding = content_encoding if content_encoding else response.apparent_encoding
                 content = response.text
             else:
                 content = response.content
@@ -22,15 +22,20 @@ def __get_content(url: str, text: bool, encoding: str=None):
         print(ex)
         return None
 
-def __get_content_cached(url: str, cache_path: str, text: bool, encoding: str=None):
+def __get_content_cached(url: str, cache_path: str, text: bool, content_encoding: str=None):
+    content = None
+    cache_encoding = "utf-8" if text else None
     if cache_path and os.path.exists(cache_path):
-        with open(cache_path, encoding="utf-8") as f:
+        mode = "r" if text else "rb"
+        with open(cache_path, mode, encoding=cache_encoding) as f:
             content = f.read()
-    else:
-        content = __get_content(url, text, encoding)
-        mode = "w" if text else "wb"
+    if content is None:
+        content = __get_content(url, text, content_encoding)
         if cache_path:
-            with open(cache_path, mode, encoding="utf-8") as f:
+            dirname = os.path.dirname(cache_path)
+            os.makedirs(dirname, exist_ok=True)
+            mode = "w" if text else "wb"
+            with open(cache_path, mode, encoding=cache_encoding) as f:
                 f.write(content)
     return content
 

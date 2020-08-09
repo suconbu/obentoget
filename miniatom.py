@@ -13,7 +13,7 @@ def json_default(obj):
 @dataclasses.dataclass
 class Element:
     def to_json(self):
-        print(json.dumps(dataclasses.asdict(self), indent=2, ensure_ascii=False, default=json_default))
+        return json.dumps(dataclasses.asdict(self), indent=2, ensure_ascii=False, default=json_default)
     # def to_xml(self):
 
 @dataclasses.dataclass
