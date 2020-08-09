@@ -4,7 +4,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-def __get_content(url: str, text: bool, content_encoding: str=None):
+def _get_content(url: str, text: bool, content_encoding: str=None):
     try:
         if url.startswith("file:"):
             mode = "r" if text else "rb"
@@ -22,7 +22,7 @@ def __get_content(url: str, text: bool, content_encoding: str=None):
         print(ex)
         return None
 
-def __get_content_cached(url: str, cache_path: str, text: bool, content_encoding: str=None):
+def _get_content_cached(url: str, cache_path: str, text: bool, content_encoding: str=None):
     content = None
     cache_encoding = "utf-8" if text else None
     if cache_path and os.path.exists(cache_path):
@@ -30,7 +30,7 @@ def __get_content_cached(url: str, cache_path: str, text: bool, content_encoding
         with open(cache_path, mode, encoding=cache_encoding) as f:
             content = f.read()
     if content is None:
-        content = __get_content(url, text, content_encoding)
+        content = _get_content(url, text, content_encoding)
         if cache_path:
             dirname = os.path.dirname(cache_path)
             os.makedirs(dirname, exist_ok=True)
@@ -40,12 +40,12 @@ def __get_content_cached(url: str, cache_path: str, text: bool, content_encoding
     return content
 
 def get_blob(url: str, cache_path=None) -> bytes:
-    return __get_content_cached(url, cache_path, False)
+    return _get_content_cached(url, cache_path, False)
 
 def get_bsoup(url: str, cache_path=None, encoding: str=None) -> BeautifulSoup:
     """指定のURLが指すリソースをテキストとして取得します。
     file:で始まるURLを指定するとローカルファイルを扱うことができます。"""
-    content = __get_content_cached(url, cache_path, True, encoding)
+    content = _get_content_cached(url, cache_path, True, encoding)
     return BeautifulSoup(content, "html.parser") if content else None
 
 def test():
